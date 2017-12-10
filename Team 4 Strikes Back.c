@@ -1,3 +1,4 @@
+#pragma config(Sensor, dgtl7,  mobileLift,     sensorQuadEncoder)
 #pragma config(Sensor, dgtl9,  leftWheelEncoder, sensorQuadEncoder)
 #pragma config(Sensor, dgtl11, rightWheelEncoder, sensorQuadEncoder)
 #pragma config(Motor,  port1,           backLeft,      tmotorVex393_HBridge, openLoop)
@@ -62,16 +63,38 @@ task autonomous()
 	//Clear Encoders
 	SensorValue[rightWheelEncoder] = 0;
 	SensorValue[leftWheelEncoder] = 0;
+	SensorValue[mobileLift] = 0;
+
 	while(true)
 	{
-		while(SensorValue[leftWheelEncoder] < 350)
+		while(SensorValue[mobileLift] > -85)
+		{
+			motor[mobileGoal] = -127;
+		}
+		motor[mobileGoal] = 0;
+		wait1Msec(100);
+		SensorValue[mobileLift] = 0;
+
+		while(SensorValue[mobileLift] < 17)
+		{
+			motor[mobileGoal] = 127;
+		}
+		motor[mobileGoal] = 0;
+		wait1Msec(500);//1/2 second delay
+
+		//clear encoders
+		SensorValue[rightWheelEncoder] = 0;
+		SensorValue[leftWheelEncoder] = 0;
+		SensorValue[mobileLift] = 0;
+
+		while(SensorValue[leftWheelEncoder] < 250)//move forward 250 counts
 		{
 			if(SensorValue[leftWheelEncoder] < SensorValue[rightWheelEncoder])//if right side is behind
 			{
 				motor[backLeft] = 63;
-				motor[backRight] = 50;
+				motor[backRight] = 40;
 				motor[frontLeft] = 63;
-				motor[frontRight] = 50;
+				motor[frontRight] = 40;
 			}
 			else if(SensorValue[rightWheelEncoder] < SensorValue[leftWheelEncoder])//if left side is behind
 			{
@@ -89,80 +112,182 @@ task autonomous()
 				motor[frontRight] = 63;
 			}
 		}
+
 		motor[backLeft] = 0;
 		motor[backRight] = 0;
 		motor[frontLeft] = 0;
 		motor[frontRight] = 0;
-		wait1Msec(1000);  // 1 Second Delay
+		wait1Msec(500);  // 1/2 Second Delay
 
-	//Clear Encoders
-	SensorValue[rightWheelEncoder] = 0;
-	SensorValue[leftWheelEncoder] = 0;
-	}
-}
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+		//Clear Encoders
+		SensorValue[rightWheelEncoder] = 0;
+		SensorValue[leftWheelEncoder] = 0;
+		SensorValue[mobileLift] = 0;
 
-task usercontrol()
-{
-	// User control code here, inside the loop
+		//pick up mobile goal
+		while(SensorValue[mobileLift] < 35)
+		{
+			motor[mobileGoal] = 127;
+		}
+		motor[mobileGoal] = 0;
 
-	while (true)
-	{
-		//Right side of the robot is controlled by the right joystick, Y-axis
-		motor[frontRight] = vexRT[Ch2];
-		motor[backRight]  = vexRT[Ch2];
-		//Left side of the robot is controlled by the left joystick, Y-axis
-		motor[frontLeft] = vexRT[Ch3];
-		motor[backLeft]  = vexRT[Ch3];
-		//claw lift code
-		if(vexRT[Btn5U] == 1)
-		{
-			motor[rightLift] = 127;
-			motor[leftLift] = 127;
-		}
-		else if(vexRT[Btn5D] == 1)
-		{
-			motor[rightLift] = -127;
-			motor[leftLift] = -127;
-		}
-		else
-		{
-			motor[rightLift] = 0;
-			motor[leftLift] = 0;
-		}
-		//claw code
-		if(vexRT[Btn6U] == 1) //Button 6 up is pressed, close claw
-		{
-			motor[claw] = 127;
-		}
+		wait1Msec(500);  // 1/2 Second Delay
 
-		else if(vexRT[Btn6D] == 1) //Button 6 down is pressed, open claw
-		{
-			motor[claw] = -100;
-		}
+		//Clear Encoders
+		SensorValue[rightWheelEncoder] = 0;
+		SensorValue[leftWheelEncoder] = 0;
+		SensorValue[mobileLift] = 0;
 
-		else //If neither is pressed, stop motors
+		//turn right
+		while(SensorValue[leftWheelEncoder] < 150)
 		{
-			motor[claw] = 0;
+			motor[backLeft] = 63;
+			motor[backRight] = -63;
+			motor[frontLeft] = 63;
+			motor[frontRight] = -63;
 		}
-		//mobile lift code
-		if(vexRT[Btn7U] == 1)
+		motor[backLeft] =  0;
+		motor[backRight] = 0;
+		motor[frontLeft] = 0;
+		motor[frontRight] = 0;
+		wait1Msec(500); //1/2 second delay
+		//Clear Encoders
+		SensorValue[rightWheelEncoder] = 0;
+		SensorValue[leftWheelEncoder] = 0;
+		SensorValue[mobileLift] = 0;
+
+
+		//move forward 250 counts
+		while(SensorValue[leftWheelEncoder] < 250)
 		{
-			motor[mobileGoal] = 63;
+			if(SensorValue[leftWheelEncoder] < SensorValue[rightWheelEncoder])//if right side is behind
+			{
+				motor[backLeft] = 83;
+				motor[backRight] = 50;
+				motor[frontLeft] = 83;
+				motor[frontRight] = 50;
+			}
+			else if(SensorValue[rightWheelEncoder] < SensorValue[leftWheelEncoder])//if left side is behind
+			{
+				motor[backLeft] = 50;
+				motor[backRight] = 83;
+				motor[frontLeft] = 83;
+				motor[frontRight] = 50;
+			}
+			else
+			{
+				//...Move Forward
+				motor[backLeft] = 83;
+				motor[backRight] = 83;
+				motor[frontLeft] = 83;
+				motor[frontRight] = 83;
+			}
 		}
-		else if(vexRT[Btn7D] == 1)
+		motor[backLeft] = 0;
+		motor[backRight] = 0;
+		motor[frontLeft] = 0;
+		motor[frontRight] = 0;
+
+		wait1Msec(500); //1/2 second delay
+
+		//Clear Encoders
+		SensorValue[rightWheelEncoder] = 0;
+		SensorValue[leftWheelEncoder] = 0;
+		SensorValue[mobileLift] = 0;
+
+		//drop mobile goal
+		while(SensorValue[mobileLift] > -32)
 		{
-			motor[mobileGoal] = -63;
+			motor[mobileGoal] = -127;
 		}
-		else
+		motor[mobileGoal] = 0;
+		wait1Msec(500); //1/2 second delay
+
+		//Clear Encoders
+		SensorValue[rightWheelEncoder] = 0;
+		SensorValue[leftWheelEncoder] = 0;
+		SensorValue[mobileLift] = 0;
+
+		//back up 1 sec
+		motor[backLeft] = -127;
+		motor[backRight] = -127;
+		motor[frontLeft] = -127;
+		motor[frontRight] = -127;
+		wait1Msec(1000);
+		while(true)//wait there
+		{
+			motor[backLeft] = 0;
+			motor[backRight] = 0;
+			motor[frontLeft] = 0;
+			motor[frontRight] = 0;
 			motor[mobileGoal] = 0;
+		}
 	}
 }
+	/*-----
+	----------------------------------------------------------------------*/
+	/*                                                                           */
+	/*                              User Control Task                            */
+	/*                                                                           */
+	/*  This task is used to control your robot during the user control phase of */
+	/*  a VEX Competition.                                                       */
+	/*                                                                           */
+	/*  You must modify the code to add your own robot specific commands here.   */
+	/*---------------------------------------------------------------------------*/
+
+	task usercontrol()
+	{
+		// User control code here, inside the loop
+
+		while (true)
+		{
+			//Right side of the robot is controlled by the right joystick, Y-axis
+			motor[frontRight] = vexRT[Ch2];
+			motor[backRight]  = vexRT[Ch2];
+			//Left side of the robot is controlled by the left joystick, Y-axis
+			motor[frontLeft] = vexRT[Ch3];
+			motor[backLeft]  = vexRT[Ch3];
+			//claw lift code
+			if(vexRT[Btn5U] == 1)
+			{
+				motor[rightLift] = 55;
+				motor[leftLift] = 55;
+			}
+			else if(vexRT[Btn5D] == 1)
+			{
+				motor[rightLift] = -55;
+				motor[leftLift] = -55;
+			}
+			else
+			{
+				motor[rightLift] = 0;
+				motor[leftLift] = 0;
+			}
+			//claw code
+			if(vexRT[Btn6U] == 1) //Button 6 up is pressed, close claw
+			{
+				motor[claw] = 127;
+			}
+
+			else if(vexRT[Btn6D] == 1) //Button 6 down is pressed, open claw
+			{
+				motor[claw] = -127;
+			}
+
+			else //If neither is pressed, stop motors
+			{
+				motor[claw] = 0;
+			}
+			//mobile lift code
+			if(vexRT[Btn7U] == 1)
+			{
+				motor[mobileGoal] = 127;
+			}
+			else if(vexRT[Btn7D] == 1)
+			{
+				motor[mobileGoal] = -127;
+			}
+			else
+				motor[mobileGoal] = 0;
+		}
+	}
